@@ -350,6 +350,11 @@
             <artifactId>nuprocess</artifactId>
             <version>${nuprocess.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.kotlin-telegram-bot.kotlin-telegram-bot</groupId>
+            <artifactId>dispatcher</artifactId>
+            <version>6.0.6</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -715,6 +720,10 @@
             <id>github-vorpal-research-kotlin-maven</id>
             <name>vorpal-research-kotlin-maven</name>
             <url>https://maven.vorpal-research.science</url>
+        </repository>
+        <repository>
+                <id>jitpack.io</id>
+                <url>https://jitpack.io</url>
         </repository>
     </repositories>
 

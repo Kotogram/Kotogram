@@ -31,6 +31,9 @@ fun main(@Suppress(UNUSED_PARAMETER) args: Array<String>) {
 
     CoroutineScope(Dispatchers.Unconfined)
             .launch(CoroutineName("main function")) { startApplication() }
+
+    CoroutineScope(Dispatchers.Unconfined)
+            .launch(CoroutineName("telegram bot")) { org.blackteam.kotogram.telegramBot() }
 }
 
 val rootLog: Logger = LoggerFactory.getLogger(RootVerticle::class.java)
