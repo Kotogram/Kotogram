@@ -668,7 +668,7 @@
                             <packageName>
                                 org.jetbrains.research.kotoed.database
                             </packageName>
-                            <directory>target/generated-sources/jooq</directory>
+                            <directory>C:/work/Kotogram/kotoed-server/target/generated-sources/jooq</directory>
                         </target>
                     </generator>
                 </configuration>
