@@ -16,11 +16,22 @@ import org.jetbrains.research.kotoed.data.notification.render
 import org.jetbrains.research.kotoed.database.enums.NotificationStatus
 import org.jetbrains.research.kotoed.database.tables.records.NotificationRecord
 import org.jetbrains.research.kotoed.database.tables.records.PushSubscriptionRecord
+import org.jetbrains.research.kotoed.database.tables.records.TelegrambotusersRecord
 import org.jetbrains.research.kotoed.eventbus.Address
 import org.jetbrains.research.kotoed.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import com.github.kotlintelegrambot.*
+import com.github.kotlintelegrambot.dispatcher.command
+import com.github.kotlintelegrambot.dispatcher.message
+import com.github.kotlintelegrambot.dispatcher.text
+import com.github.kotlintelegrambot.entities.ChatId
+import org.jetbrains.research.kotoed.database.tables.Contacts
+import org.jetbrains.research.kotoed.database.tables.Telegrambotusers
+import org.jooq.*
+import org.jooq.impl.DSL
+import java.sql.DriverManager
 
 suspend fun PushService.sendSuspendable(notification: Notification): HttpResponse = suspendCoroutine { cont ->
     preparePost(notification, Encoding.AESGCM).also { post ->
@@ -105,12 +116,38 @@ class NotificationVerticle : AbstractKotoedVerticle() {
 
             log.info("Response: ${resp.statusLine}")
         }
+
     }
 
     @JsonableEventBusConsumerFor(Address.Api.Notification.Create)
     suspend fun handleCreate(query: NotificationRecord): NotificationRecord {
         val record = dbCreateAsync(query)
-
+        // Kotogram notification function
+        try{
+            DriverManager.getConnection(Config.Debug.Database.Url,Config.Debug.Database.Password,Config.Debug.Database.Password).use { conn ->
+                val create: DSLContext = DSL.using(conn, SQLDialect.POSTGRES)
+                val denizenChatIdList: List<Long> = create
+                    .selectFrom(Telegrambotusers.TELEGRAMBOTUSERS)
+                    .where(
+                        Telegrambotusers.TELEGRAMBOTUSERS.DENIZENID
+                            .eq(query.denizenId))
+                    .fetch()
+                    .getValues(Telegrambotusers.TELEGRAMBOTUSERS.CHATID)
+                val bot = bot{
+                    token = org.blackteam.kotogram.createToken()
+                }
+                if(denizenChatIdList.isEmpty()==false) {
+                    for (i in 0 until denizenChatIdList.size) {
+                        val listItem = denizenChatIdList[i]
+                        bot.sendMessage(chatId = ChatId.fromId(listItem), text = "Вам пришло уведомление от системы Котоед:" + record.body.toString())
+                    }
+                }
+            }
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+        }
+        // end function
         publishJsonable(
                 Address.Api.Notification.pushRendered(record.denizenId.toString()),
                 render(record)
