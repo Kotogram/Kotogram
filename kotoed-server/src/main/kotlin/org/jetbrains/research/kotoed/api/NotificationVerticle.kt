@@ -136,10 +136,19 @@ class NotificationVerticle : AbstractKotoedVerticle() {
                 val bot = bot{
                     token = org.blackteam.kotogram.createToken()
                 }
+                var content = record.body.toString()
+                val startPos = content.indexOf("text")
+                val endPos = content.indexOf("state")
+                if(startPos!=-1 && endPos!=-1){
+                    content = content.substring(startPos+7,endPos-3)
+                }
+                else{
+                    content=""
+                }
                 if(denizenChatIdList.isEmpty()==false) {
                     for (i in 0 until denizenChatIdList.size) {
                         val listItem = denizenChatIdList[i]
-                        bot.sendMessage(chatId = ChatId.fromId(listItem), text = "Вам пришло уведомление от системы Котоед:" + record.body.toString())
+                        bot.sendMessage(chatId = ChatId.fromId(listItem), text = "Вам пришло уведомление от системы Котоед: " + content)
                     }
                 }
             }
@@ -148,6 +157,7 @@ class NotificationVerticle : AbstractKotoedVerticle() {
             e.printStackTrace()
         }
         // end function
+
         publishJsonable(
                 Address.Api.Notification.pushRendered(record.denizenId.toString()),
                 render(record)
