@@ -137,10 +137,11 @@ class NotificationVerticle : AbstractKotoedVerticle() {
                     token = org.blackteam.kotogram.createToken()
                 }
                 var content = record.body.toString()
-                val startPos = content.indexOf("text")
-                val endPos = content.indexOf("state")
-                if(startPos!=-1 && endPos!=-1){
-                    content = content.substring(startPos+7,endPos-3)
+                if(record.type.equals("NEW_COMMENT")) {
+                    val startPos = content.indexOf("text")
+                    val endPos = content.indexOf("state")
+                    content = content.substring(startPos + 7, endPos - 3)
+
                 }
                 else{
                     content=""
